@@ -2,7 +2,8 @@ const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
 const modelSchema = new mongoose.Schema({
-    name, slug: String,
+    name: String,
+    slug: String
 });
 
 const modelName = 'Category';

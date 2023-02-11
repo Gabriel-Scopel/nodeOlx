@@ -2,7 +2,11 @@ const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
 const modelSchema = new mongoose.Schema({
-    name, email, state, passwordHash, token : String,
+    name: String,
+    email: String,
+    state: String,
+    passwordHash: String,
+    token: String 
 });
 
 const modelName = 'User';

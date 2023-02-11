@@ -2,7 +2,9 @@ const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
 const modelSchema = new mongoose.Schema({
-    idUser, state, category: String,
+    idUser: String,
+    state: String,
+    category: String,
     images:[Object],
     dateCreated: Date,
     title: String,

@@ -10,7 +10,6 @@ mongoose.set("strictQuery", true);
 //conexão com o banco de dados mongoose
 mongoose.connect(process.env.DATABASE,{
     useNewUrlParser: true,
-    //useFindAndModify: false,
     useUnifiedTopology: true
 });
 
@@ -24,7 +23,7 @@ mongoose.connection.on('error', (error)=>{
 const server = express();
 server.use(cors());
 server.use(express.json());
-server.use(express.urlencoded({extended: true}));
+server.use(express.urlencoded({extended: true})); //permitindo que os dados enviados via post sejam acessados
 server.use(fileupload());
 
 server.use(express.static(__dirname+'/public'));

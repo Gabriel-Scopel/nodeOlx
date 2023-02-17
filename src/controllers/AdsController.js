@@ -34,6 +34,16 @@ module.exports={
             res.json({error:" Título e/ou categoria não preenchidos"});
             return
         }
+        if(cat.length<12){ //toda categoria tem 12 caracteres
+            res.json({error:'categoria inexistente'});
+            return;
+        }
+        const category = await Category.findById(cat);
+        if(!category){
+            res.json({error:'ID de categoria inexistente'});
+            return;
+        }
+
         if(price){
             price = price.replace('.','').replace(',','.').replace('R$', '');
             price = parseFloat(price);
@@ -213,6 +223,84 @@ module.exports={
         })
     },
     editAction: async(req, res)=>{
+        let {id} = req.params; //pegando o id do anúncio (que vem na url)
+        let {title, status, price, priceneg, desc, cat, images, token} = req.body; //o token é necessário uma vez que o usuário só pode alterar anuncios que são dele
         
+        if(id.length<12){ //o id tem por padrão 12 caracteres, se ele tiver menos, é um id inválido
+            res.json({error: 'id inválido'});
+            return;
+        }
+        const ad = Ad.findById(id).exec();
+        if(!ad){
+            res.json({error: 'anúncio inexistente'});
+        }
+        const user = await User.findOne({token}).exec();
+        if(user._id.toString() !== ad.idUser){
+            res.json({error: 'você não pode alterar anúncios de terceiros'});
+        }
+        //processo de atualização do produto:
+        let updates = {};
+        
+        if(title){
+            updates.title = title;
+        }
+        if(price){
+            price = price.replace('.','').replace(',','.').replace('R$', '');
+            price = parseFloat(price);
+            updates.price = price;
+        }
+        if(priceneg){
+            updates.priceNegotiable = priceneg;
+        }
+        if(status){
+            updates.status = status;
+        }
+        if(desc){
+            updates.description = desc;
+        }
+        if(cat){
+            const category = await Category.findOne({slug:cat}).exec();
+            if(!category){
+                res.json({error:'Categoria inexistente'});
+                return;
+            }
+            updates.categories = category._id.toString();
+        }
+        if(images){
+            updates.images=images;
+        }
+        await Ad.findByIdAndUpdate(id, {$set: updates}); //acha o anúncio pelo id e faz seu update com as informações que o usuário mandou atualizar
+        
+        if(req.files && req.files.img) {
+            const adI = await Ad.findById(id);
+
+            if(req.files.img.length == undefined) {
+                if(['image/jpeg', 'image/jpg', 'image/png'].includes(req.files.img.mimetype)) {
+                    let url = await addImage(req.files.img.data);
+                    adI.images.push({
+                        url,
+                        default: false
+                    });
+                }
+            } else {
+                for(let i=0; i < req.files.img.length; i++) {
+                    if(['image/jpeg', 'image/jpg', 'image/png'].includes(req.files.img[i].mimetype)) {
+                        let url = await addImage(req.files.img[i].data);
+                        adI.images.push({
+                            url,
+                            default: false
+                        });
+                    }
+                }
+            }
+
+            adI.images = [...adI.images];
+            await adI.save();
+        }
+
+
+        res.json({error:""});
+        
+
     },
 }
